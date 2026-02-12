@@ -1,0 +1,1978 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#ffffff">
+    
+    <title>Sistema de Diárias</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Gerencie suas diárias de forma simples e organizada">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Diárias">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon-192.png">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        :root {
+    /* Isso cria uma variável com a altura da barra de status */
+    --status-bar-height: env(safe-area-inset-top, 20px);
+}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body::-webkit-scrollbar {
+            display: none;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding-top: env(safe-area-inset-top);
+            padding-top: var(--status-bar-height);
+            background-color: #ffffff;
+            
+        }
+        header{
+            /* Adiciona um espaço no topo igual ao tamanho da barra de status */
+            padding-top: env(safe-area-inset-top);
+            background-color: #ffffff; /* Sua cor branca */
+        }
+        
+
+        /* TELA DE LOGIN */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-box h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .login-box p {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* NAVEGAÇÃO */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            top: 0;
+            z-index: 100;
+            position:static;
+            top: var(--status-bar-height); /* Ela começa abaixo da barra de status */
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .nav-content {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .user-icon-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .user-icon-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+        }
+
+        /* BOTTOM NAVIGATION (MOBILE) */
+        .bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+            padding: 10px 0 env(safe-area-inset-bottom, 10px) 0;
+        }
+
+        .bottom-nav-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #999;
+            transition: all 0.3s;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .bottom-nav-item .icon {
+            font-size: 24px;
+            transition: all 0.3s;
+        }
+
+        .bottom-nav-item.active {
+            color: #667eea;
+        }
+
+        .bottom-nav-item.active .icon {
+            transform: scale(1.2);
+        }
+
+        /* MODAL DE USUÁRIO */
+        .user-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s;
+        }
+
+        .user-modal.active {
+            display: block;
+        }
+
+        .user-modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 0;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+
+        .user-modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px 20px 0 0;
+            text-align: center;
+        }
+
+        .user-modal-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: white;
+            color: #667eea;
+            font-size: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .user-modal-name {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .user-modal-email {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .user-modal-body {
+            padding: 30px;
+        }
+
+        .user-modal-logout {
+            width: 100%;
+            padding: 15px;
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .user-modal-logout:hover {
+            background: #ff3838;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.3);
+        }
+
+        .nav-btn {
+            padding: 10px 25px;
+            background: transparent;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            color: #667eea;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .nav-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: #666;
+        }
+
+        .btn-logout {
+            padding: 8px 20px;
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: #ff3838;
+        }
+
+        /* CONTAINER PRINCIPAL */
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        /* PÁGINAS */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* PÁGINA INÍCIO */
+        .welcome-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+
+        .welcome-card h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+
+        .welcome-card p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        /* RESUMO GERAL */
+        .summary {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .summary h2 {
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2em;
+            text-align: center;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 35px;
+            border-radius: 20px;
+            color: white;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            transform: rotate(45deg);
+        }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        .summary-card.success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+            box-shadow: 0 10px 30px rgba(86, 171, 47, 0.3);
+        }
+
+        .summary-card.success:hover {
+            box-shadow: 0 15px 40px rgba(86, 171, 47, 0.4);
+        }
+
+        .summary-card.warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 10px 30px rgba(245, 87, 108, 0.3);
+        }
+
+        .summary-card.warning:hover {
+            box-shadow: 0 15px 40px rgba(245, 87, 108, 0.4);
+        }
+
+        .summary-card.info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            box-shadow: 0 10px 30px rgba(79, 172, 254, 0.3);
+        }
+
+        .summary-card.info:hover {
+            box-shadow: 0 15px 40px rgba(79, 172, 254, 0.4);
+        }
+
+        .summary-card-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+        .summary-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .summary-value {
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+
+        /* PÁGINA REGISTRO */
+        .registro-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .form-section {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .form-section h2 {
+            color: #667eea;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="number"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #6c757d !important;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268 !important;
+        }
+
+        .btn-edit {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            margin-top: 15px;
+        }
+
+        /* MODAL / POP-UP */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideDown 0.3s;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 30px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .modal-lista-item {
+            background: #f8f9ff;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .modal-lista-item:hover {
+            background: #e8ebff;
+            border-color: #667eea;
+            transform: translateX(10px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .modal-lista-item-titulo {
+            font-weight: 700;
+            color: #333;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+
+        .modal-lista-item-info {
+            font-size: 0.95em;
+            color: #666;
+        }
+
+        .modal-empty {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .modal-empty-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+        }
+
+        .resumo-section {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .resumo-section h2 {
+            color: #667eea;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+
+        .resumo-item {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .resumo-item:last-child {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .resumo-label {
+            font-weight: 600;
+        }
+
+        .resumo-value {
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+
+        /* PÁGINA REGISTROS */
+        .registros-section {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .registros-section h2 {
+            color: #667eea;
+            margin-bottom: 25px;
+            font-size: 2em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        tr:hover {
+            background: #f8f9ff;
+        }
+
+        .btn-delete {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn-delete:hover {
+            background: #ff3838;
+            transform: scale(1.05);
+        }
+
+        .no-records {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-style: italic;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+
+        /* CARDS MOBILE PARA REGISTROS */
+        .registros-cards {
+            display: none;
+        }
+
+        /* CARDS DESKTOP PARA REGISTROS */
+        .registros-cards-desktop {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .registro-card-desktop {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid #e8e8e8;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .registro-card-desktop:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+
+        .registro-card-desktop-header {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .registro-card-desktop-body {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .registro-card-desktop-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .registro-card-desktop-label {
+            font-weight: 400;
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .registro-card-desktop-value {
+            font-weight: 600;
+            color: #333;
+            font-size: 1em;
+        }
+
+        .registro-card-desktop-actions {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e8e8e8;
+        }
+
+        .registro-card {
+            background: #f8f9ff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .registro-card-header {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .registro-card-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .registro-card-row:last-child {
+            border-bottom: none;
+        }
+
+        .registro-card-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .registro-card-value {
+            font-weight: 700;
+            color: #333;
+        }
+
+        .registro-card-actions {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .error-message {
+            background: #ff4757;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .success-message {
+            background: #56ab2f;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* RESPONSIVO */
+        @media (max-width: 768px) {
+            body {
+                padding-bottom: 80px; /* Espaço para bottom nav */
+            }
+
+            .logo {
+                font-size: 1.1em;
+            }
+
+            /* Esconder navegação desktop */
+            .nav-links {
+                display: none !important;
+            }
+
+            /* Mostrar ícone de usuário mobile */
+            #mobileUserIcon {
+                display: flex !important;
+            }
+
+            /* Mostrar apenas logo e ícone de usuário no topo */
+            .nav-container {
+                padding: 0 15px;
+            }
+
+            /* Mostrar bottom navigation */
+            .bottom-nav {
+                display: block;
+            }
+
+            .container {
+                margin-bottom: 20px;
+            }
+
+            .registro-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .welcome-card h1 {
+                font-size: 1.8em;
+            }
+
+            .welcome-card {
+                padding: 25px;
+            }
+
+            .summary {
+                padding: 25px;
+            }
+
+            .summary h2 {
+                font-size: 1.5em;
+            }
+
+            .summary-value {
+                font-size: 2em;
+            }
+
+            .form-section, .resumo-section, .registros-section {
+                padding: 20px;
+            }
+
+            /* Esconder cards desktop e tabela no mobile */
+            .registros-cards-desktop {
+                display: none !important;
+            }
+
+            table {
+                display: none !important;
+            }
+
+            /* Mostrar cards mobile */
+            .registros-cards {
+                display: block !important;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+
+            .user-modal-content {
+                margin: 30% auto;
+            }
+
+            .login-box {
+                padding: 25px;
+            }
+        }
+
+        @media (min-width: 769px) {
+            /* Esconder cards mobile no desktop */
+            .registros-cards {
+                display: none !important;
+            }
+
+            /* Esconder tabela no desktop */
+            table {
+                display: none !important;
+            }
+
+            /* Mostrar cards desktop */
+            .registros-cards-desktop {
+                display: grid !important;
+            }
+
+            /* Esconder bottom nav no desktop */
+            .bottom-nav {
+                display: none !important;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* LOADING SCREEN */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: white;
+            font-size: 1.2em;
+            margin-top: 20px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- LOADING SCREEN -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Carregando...</div>
+    </div>
+
+    <!-- TELA DE LOGIN -->
+    <div id="loginScreen" class="login-container hidden">
+        <div class="login-box">
+            <h1>📋 Sistema de Diárias</h1>
+            <p>Faça login ou crie sua conta</p>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+                <button class="tab-btn" onclick="switchTab('register')">Cadastro</button>
+            </div>
+
+            <div id="loginTab" class="tab-content active">
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="loginEmail">E-mail</label>
+                        <input type="email" id="loginEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Senha</label>
+                        <input type="password" id="loginPassword" required>
+                    </div>
+                    <button type="submit" class="btn">🔓 Entrar</button>
+                </form>
+            </div>
+
+            <div id="registerTab" class="tab-content">
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label for="registerNome">Nome</label>
+                        <input type="text" id="registerNome" placeholder="Digite seu nome" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerEmail">E-mail</label>
+                        <input type="email" id="registerEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword">Senha (mínimo 6 caracteres)</label>
+                        <input type="password" id="registerPassword" minlength="6" required>
+                    </div>
+                    <button type="submit" class="btn">✅ Criar Conta</button>
+                </form>
+            </div>
+
+            <div id="authMessage"></div>
+        </div>
+    </div>
+
+    <!-- APLICAÇÃO PRINCIPAL -->
+    <div id="mainApp" class="hidden">
+        <!-- NAVEGAÇÃO -->
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo"><i class="fas fa-clipboard-list"></i> Sistema de Diárias</div>
+                
+                <!-- Navegação Desktop -->
+                <div class="nav-links">
+                    <button class="nav-btn active" onclick="mostrarPagina('inicio')"><i class="fas fa-home"></i> Início</button>
+                    <button class="nav-btn" onclick="mostrarPagina('registro')"><i class="fas fa-plus-circle"></i> Registro</button>
+                    <button class="nav-btn" onclick="mostrarPagina('registros')"><i class="fas fa-chart-bar"></i> Registros</button>
+                    <button class="user-icon-btn" onclick="toggleUserModal()"><i class="fas fa-user"></i></button>
+                </div>
+
+                <!-- Ícone de Usuário (Mobile) -->
+                <button class="user-icon-btn" id="mobileUserIcon" onclick="toggleUserModal()" style="display: none;"><i class="fas fa-user"></i></button>
+            </div>
+        </nav>
+
+        <!-- Bottom Navigation (Mobile) -->
+        <div class="bottom-nav">
+            <div class="bottom-nav-container">
+                <button class="bottom-nav-item active" onclick="mostrarPaginaMobile('inicio')">
+                    <span class="icon"><i class="fas fa-home"></i></span>
+                    <span>Início</span>
+                </button>
+                <button class="bottom-nav-item" onclick="mostrarPaginaMobile('registro')">
+                    <span class="icon"><i class="fas fa-plus-circle"></i></span>
+                    <span>Registro</span>
+                </button>
+                <button class="bottom-nav-item" onclick="mostrarPaginaMobile('registros')">
+                    <span class="icon"><i class="fas fa-chart-bar"></i></span>
+                    <span>Registros</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal de Usuário -->
+        <div id="userModal" class="user-modal">
+            <div class="user-modal-content">
+                <div class="user-modal-header">
+                    <div class="user-modal-avatar"><i class="fas fa-user"></i></div>
+                    <div class="user-modal-name" id="modalUserName">Usuário</div>
+                    <div class="user-modal-email" id="modalUserEmail">usuario@email.com</div>
+                </div>
+                <div class="user-modal-body">
+                    <button class="user-modal-logout" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Sair da Conta</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <!-- PÁGINA INÍCIO -->
+            <div id="inicio" class="page active">
+                <div class="welcome-card">
+                    <h1><i class="fas fa-briefcase"></i> Bem-vindo ao Sistema de Diárias</h1>
+                    <p>Gerencie suas diárias de forma simples e organizada</p>
+                </div>
+
+                <div class="summary">
+                    <h2><i class="fas fa-coins"></i> Resumo Geral</h2>
+                    <div class="summary-grid">
+                        <div class="summary-card">
+                            <div class="summary-label">Total a Receber</div>
+                            <div class="summary-value" id="resumoTotalReceber">R$ 0,00</div>
+                        </div>
+                        <div class="summary-card success">
+                            <div class="summary-label">Total Pago</div>
+                            <div class="summary-value" id="resumoTotalPago">R$ 0,00</div>
+                        </div>
+                        <div class="summary-card warning">
+                            <div class="summary-label">Falta Receber</div>
+                            <div class="summary-value" id="resumoFaltaReceber">R$ 0,00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PÁGINA REGISTRO -->
+            <div id="registro" class="page">
+                <div class="registro-layout">
+                    <!-- FORMULÁRIO -->
+                    <div class="form-section">
+                        <h2 id="formTitulo"><i class="fas fa-plus-circle"></i> Adicionar Diária</h2>
+                        <form id="diariaForm">
+                            <div class="form-group">
+                                <label for="descricao">Descrição</label>
+                                <input type="text" id="descricao" placeholder="Ex: Trabalho em São Paulo" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="quantidade">Quantidade de Diárias</label>
+                                <input type="number" id="quantidade" min="1" placeholder="Ex: 5" value="" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="valorDiaria">Valor da Diária (R$)</label>
+                                <input type="number" id="valorDiaria" min="0" placeholder="Ex: 150" value="" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="valorPago">Valor Pago (R$)</label>
+                                <input type="number" id="valorPago" min="0" placeholder="Ex: 300" value="">
+                            </div>
+
+                            <button type="submit" class="btn" id="btnSubmit"><i class="fas fa-plus-circle"></i> Adicionar Diária</button>
+                            <button type="button" class="btn btn-secondary" id="btnCancelar" style="display: none;"><i class="fas fa-times"></i> Cancelar Edição</button>
+                        </form>
+
+                        <!-- BOTÃO EDITAR -->
+                        <button type="button" class="btn btn-edit" id="btnMostrarLista" onclick="abrirModalEdicao()"><i class="fas fa-edit"></i> Editar Diária</button>
+                    </div>
+
+                    <!-- RESUMO DO FORMULÁRIO -->
+                    <div class="resumo-section">
+                        <h2><i class="fas fa-calculator"></i> Resumo do Formulário</h2>
+                        <div class="resumo-item">
+                            <span class="resumo-label">Total a Receber:</span>
+                            <span class="resumo-value" id="formTotalReceber">R$ 0,00</span>
+                        </div>
+                        <div class="resumo-item">
+                            <span class="resumo-label">Valor Pago:</span>
+                            <span class="resumo-value" id="formValorPago">R$ 0,00</span>
+                        </div>
+                        <div class="resumo-item">
+                            <span class="resumo-label">Falta Receber:</span>
+                            <span class="resumo-value" id="formFaltaReceber">R$ 0,00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PÁGINA REGISTROS -->
+            <div id="registros" class="page">
+                <div class="registros-section">
+                    <h2><i class="fas fa-list-ul"></i> Todos os Registros</h2>
+                    <div id="loadingRegistros" class="loading">Carregando registros...</div>
+                    
+                    <!-- TABELA DESKTOP (não será mais usada) -->
+                    <table id="tabelaDiarias" class="hidden">
+                        <thead>
+                            <tr>
+                                <th>Descrição</th>
+                                <th>Qtd</th>
+                                <th>Valor/Diária</th>
+                                <th>Total</th>
+                                <th>Pago</th>
+                                <th>Falta</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="corpoTabela">
+                        </tbody>
+                    </table>
+
+                    <!-- CARDS DESKTOP -->
+                    <div id="registrosCardsDesktop" class="registros-cards-desktop hidden">
+                    </div>
+
+                    <!-- CARDS MOBILE -->
+                    <div id="registrosCards" class="registros-cards hidden">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE EDIÇÃO -->
+    <div id="modalEdicao" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-edit"></i> Selecione uma Diária para Editar</h2>
+                <button class="modal-close" onclick="fecharModalEdicao()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalListaDiarias">
+                <!-- Lista será inserida aqui -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, where, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // ========================================
+        // COLE SUAS CREDENCIAIS DO FIREBASE AQUI
+        // ========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCz_VeBBSKmpc6QaawJkOAvYxE6wpWN4-k",
+            authDomain: "app-diarias-613b9.firebaseapp.com",
+            projectId: "app-diarias-613b9",
+            storageBucket: "app-diarias-613b9.firebasestorage.app",
+            messagingSenderId: "380669342293",
+            appId: "1:380669342293:web:86aa470683f2ae0d5d1adc"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Estado global
+        let currentUser = null;
+        let editandoId = null;
+        let diarias = [];
+        let unsubscribe = null;
+
+        // ========================================
+        // FUNÇÕES DE AUTENTICAÇÃO
+        // ========================================
+
+        // Trocar abas
+        window.switchTab = function(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            if (tab === 'login') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('loginTab').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('registerTab').classList.add('active');
+            }
+        }
+
+        // Login
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                showMessage('Login realizado com sucesso!', 'success');
+            } catch (error) {
+                showMessage('Erro ao fazer login: ' + getErrorMessage(error.code), 'error');
+            }
+        });
+
+        // Cadastro
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nome = document.getElementById('registerNome').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                // Salvar nome no perfil do usuário
+                await updateProfile(userCredential.user, {
+                    displayName: nome
+                });
+                showMessage('Conta criada com sucesso!', 'success');
+            } catch (error) {
+                showMessage('Erro ao criar conta: ' + getErrorMessage(error.code), 'error');
+            }
+        });
+
+        // Logout
+        window.logout = async function() {
+            try {
+                await signOut(auth);
+                showMessage('Logout realizado com sucesso!', 'success');
+            } catch (error) {
+                showMessage('Erro ao fazer logout: ' + error.message, 'error');
+            }
+        }
+
+        // Observar estado de autenticação
+        onAuthStateChanged(auth, (user) => {
+            // Esconder loading screen
+            document.getElementById('loadingScreen').classList.add('hidden');
+            
+            if (user) {
+                currentUser = user;
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('mainApp').classList.remove('hidden');
+                
+                // Exibir nome do usuário ou email se nome não estiver disponível
+                const displayName = user.displayName || user.email.split('@')[0];
+                
+                // Atualizar modal de usuário
+                document.getElementById('modalUserName').textContent = displayName;
+                document.getElementById('modalUserEmail').textContent = user.email;
+                
+                carregarDiarias();
+            } else {
+                currentUser = null;
+                document.getElementById('loginScreen').classList.remove('hidden');
+                document.getElementById('mainApp').classList.add('hidden');
+                if (unsubscribe) unsubscribe();
+            }
+        });
+
+        // Mensagens de erro traduzidas
+        function getErrorMessage(code) {
+            const messages = {
+                'auth/email-already-in-use': 'Este e-mail já está cadastrado',
+                'auth/invalid-email': 'E-mail inválido',
+                'auth/weak-password': 'Senha muito fraca (mínimo 6 caracteres)',
+                'auth/user-not-found': 'Usuário não encontrado',
+                'auth/wrong-password': 'Senha incorreta',
+                'auth/invalid-credential': 'E-mail ou senha incorretos'
+            };
+            return messages[code] || 'Erro desconhecido';
+        }
+
+        // Mostrar mensagens
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('authMessage');
+            messageDiv.className = type === 'error' ? 'error-message' : 'success-message';
+            messageDiv.textContent = message;
+            messageDiv.style.display = 'block';
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // ========================================
+        // FUNÇÕES DO SISTEMA DE DIÁRIAS
+        // ========================================
+
+        function formatarMoeda(valor) {
+            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        window.mostrarPagina = function(pagina) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(pagina).classList.add('active');
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+
+            calcularTotaisGerais();
+            if (pagina === 'registros') {
+                renderizarTabela();
+            }
+        }
+
+        // Função para navegação mobile (bottom nav)
+        window.mostrarPaginaMobile = function(pagina) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.bottom-nav-item').forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(pagina).classList.add('active');
+            if (event && event.target) {
+                // Pega o botão pai se clicar no span
+                const button = event.target.closest('.bottom-nav-item');
+                if (button) {
+                    button.classList.add('active');
+                }
+            }
+
+            calcularTotaisGerais();
+            if (pagina === 'registros') {
+                renderizarTabela();
+            }
+        }
+
+        // Toggle modal de usuário
+        window.toggleUserModal = function() {
+            const modal = document.getElementById('userModal');
+            modal.classList.toggle('active');
+        }
+
+        // Fechar modal ao clicar fora
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('userModal');
+            if (event.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
+
+        // Carregar diárias do Firestore
+        async function carregarDiarias() {
+            if (!currentUser) return;
+
+            const q = query(collection(db, 'diarias'), where('userId', '==', currentUser.uid));
+            
+            unsubscribe = onSnapshot(q, (snapshot) => {
+                diarias = [];
+                snapshot.forEach((doc) => {
+                    diarias.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                
+                calcularTotaisGerais();
+                renderizarTabela();
+                document.getElementById('loadingRegistros').classList.add('hidden');
+                document.getElementById('tabelaDiarias').classList.remove('hidden');
+                document.getElementById('registrosCards').classList.remove('hidden');
+                document.getElementById('registrosCardsDesktop').classList.remove('hidden');
+            });
+        }
+
+        // Calcular totais gerais
+        function calcularTotaisGerais() {
+            let totalReceber = 0;
+            let totalPago = 0;
+
+            diarias.forEach(diaria => {
+                totalReceber += diaria.total;
+                totalPago += diaria.valorPago;
+            });
+
+            let faltaReceber = totalReceber - totalPago;
+
+            document.getElementById('resumoTotalReceber').textContent = formatarMoeda(totalReceber);
+            document.getElementById('resumoTotalPago').textContent = formatarMoeda(totalPago);
+            document.getElementById('resumoFaltaReceber').textContent = formatarMoeda(faltaReceber);
+        }
+
+        // Calcular valores do formulário em tempo real
+        function calcularFormulario() {
+            const quantidade = parseInt(document.getElementById('quantidade').value) || 0;
+            const valorDiaria = parseInt(document.getElementById('valorDiaria').value) || 0;
+            const valorPago = parseInt(document.getElementById('valorPago').value) || 0;
+
+            const total = quantidade * valorDiaria;
+            const faltaReceber = total - valorPago;
+
+            document.getElementById('formTotalReceber').textContent = formatarMoeda(total);
+            document.getElementById('formValorPago').textContent = formatarMoeda(valorPago);
+            document.getElementById('formFaltaReceber').textContent = formatarMoeda(faltaReceber);
+        }
+
+        document.getElementById('quantidade').addEventListener('input', calcularFormulario);
+        document.getElementById('valorDiaria').addEventListener('input', calcularFormulario);
+        document.getElementById('valorPago').addEventListener('input', calcularFormulario);
+
+        // Renderizar tabela
+        function renderizarTabela() {
+            const corpoTabela = document.getElementById('corpoTabela');
+            const cardsContainer = document.getElementById('registrosCards');
+            const cardsDesktopContainer = document.getElementById('registrosCardsDesktop');
+            
+            if (diarias.length === 0) {
+                corpoTabela.innerHTML = '<tr><td colspan="7" class="no-records">Nenhum registro cadastrado</td></tr>';
+                cardsContainer.innerHTML = '<div class="no-records">Nenhum registro cadastrado</div>';
+                cardsDesktopContainer.innerHTML = '<div class="no-records">Nenhum registro cadastrado</div>';
+                return;
+            }
+
+            // Renderizar TABELA (não será mais usada, mas mantendo por compatibilidade)
+            corpoTabela.innerHTML = diarias.map((diaria) => `
+                <tr>
+                    <td>${diaria.descricao}</td>
+                    <td>${diaria.quantidade}</td>
+                    <td>${formatarMoeda(diaria.valorDiaria)}</td>
+                    <td>${formatarMoeda(diaria.total)}</td>
+                    <td>${formatarMoeda(diaria.valorPago)}</td>
+                    <td>${formatarMoeda(diaria.faltaReceber)}</td>
+                    <td>
+                        <button class="btn-delete" onclick="deletarDiaria('${diaria.id}')"><i class="fas fa-trash-alt"></i> Excluir</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            // Renderizar CARDS DESKTOP
+            cardsDesktopContainer.innerHTML = diarias.map((diaria) => `
+                <div class="registro-card-desktop">
+                    <div class="registro-card-desktop-header">
+                        ${diaria.descricao}
+                    </div>
+                    <div class="registro-card-desktop-body">
+                        <div class="registro-card-desktop-row">
+                            <span class="registro-card-desktop-label">Quantidade:</span>
+                            <span class="registro-card-desktop-value">${diaria.quantidade} diárias</span>
+                        </div>
+                        <div class="registro-card-desktop-row">
+                            <span class="registro-card-desktop-label">Valor/Diária:</span>
+                            <span class="registro-card-desktop-value">${formatarMoeda(diaria.valorDiaria)}</span>
+                        </div>
+                        <div class="registro-card-desktop-row">
+                            <span class="registro-card-desktop-label">Total:</span>
+                            <span class="registro-card-desktop-value">${formatarMoeda(diaria.total)}</span>
+                        </div>
+                        <div class="registro-card-desktop-row">
+                            <span class="registro-card-desktop-label">Pago:</span>
+                            <span class="registro-card-desktop-value">${formatarMoeda(diaria.valorPago)}</span>
+                        </div>
+                        <div class="registro-card-desktop-row">
+                            <span class="registro-card-desktop-label">Falta Receber:</span>
+                            <span class="registro-card-desktop-value" style="color: #f5576c; font-weight: 700;">${formatarMoeda(diaria.faltaReceber)}</span>
+                        </div>
+                    </div>
+                    <div class="registro-card-desktop-actions">
+                        <button class="btn-delete" style="width: 100%;" onclick="deletarDiaria('${diaria.id}')"><i class="fas fa-trash-alt"></i> Excluir</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Renderizar CARDS MOBILE
+            cardsContainer.innerHTML = diarias.map((diaria) => `
+                <div class="registro-card">
+                    <div class="registro-card-header">${diaria.descricao}</div>
+                    <div class="registro-card-row">
+                        <span class="registro-card-label">Quantidade:</span>
+                        <span class="registro-card-value">${diaria.quantidade} diárias</span>
+                    </div>
+                    <div class="registro-card-row">
+                        <span class="registro-card-label">Valor/Diária:</span>
+                        <span class="registro-card-value">${formatarMoeda(diaria.valorDiaria)}</span>
+                    </div>
+                    <div class="registro-card-row">
+                        <span class="registro-card-label">Total:</span>
+                        <span class="registro-card-value">${formatarMoeda(diaria.total)}</span>
+                    </div>
+                    <div class="registro-card-row">
+                        <span class="registro-card-label">Pago:</span>
+                        <span class="registro-card-value">${formatarMoeda(diaria.valorPago)}</span>
+                    </div>
+                    <div class="registro-card-row">
+                        <span class="registro-card-label">Falta Receber:</span>
+                        <span class="registro-card-value" style="color: #f5576c; font-size: 1.1em;">${formatarMoeda(diaria.faltaReceber)}</span>
+                    </div>
+                    <div class="registro-card-actions">
+                        <button class="btn-delete" style="width: 100%;" onclick="deletarDiaria('${diaria.id}')"><i class="fas fa-trash-alt"></i> Excluir</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Abrir modal de edição
+        window.abrirModalEdicao = function() {
+            renderizarListaModal();
+            document.getElementById('modalEdicao').style.display = 'block';
+        }
+
+        // Fechar modal de edição
+        window.fecharModalEdicao = function() {
+            document.getElementById('modalEdicao').style.display = 'none';
+        }
+
+        // Fechar modal ao clicar fora
+        window.onclick = function(event) {
+            const modal = document.getElementById('modalEdicao');
+            if (event.target == modal) {
+                fecharModalEdicao();
+            }
+        }
+
+        // Fechar modal com ESC
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                fecharModalEdicao();
+            }
+        });
+
+        // Renderizar lista no modal
+        function renderizarListaModal() {
+            const modalLista = document.getElementById('modalListaDiarias');
+            
+            if (diarias.length === 0) {
+                modalLista.innerHTML = `
+                    <div class="modal-empty">
+                        <div class="modal-empty-icon">📝</div>
+                        <p style="font-size: 1.1em; color: #666;">Nenhuma diária cadastrada</p>
+                        <p style="color: #999; margin-top: 10px;">Adicione uma diária primeiro para poder editá-la</p>
+                    </div>
+                `;
+                return;
+            }
+
+            modalLista.innerHTML = diarias.map((diaria) => `
+                <div class="modal-lista-item" onclick="selecionarDiariaParaEditar('${diaria.id}')">
+                    <div class="modal-lista-item-titulo">${diaria.descricao}</div>
+                    <div class="modal-lista-item-info">
+                        📊 ${diaria.quantidade} diárias × ${formatarMoeda(diaria.valorDiaria)} = ${formatarMoeda(diaria.total)}
+                        <br>
+                        💰 Pago: ${formatarMoeda(diaria.valorPago)} | Falta: ${formatarMoeda(diaria.faltaReceber)}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Selecionar diária para editar
+        window.selecionarDiariaParaEditar = function(id) {
+            fecharModalEdicao();
+            editarDiaria(id);
+        }
+
+        // Editar diária
+        function editarDiaria(id) {
+            editandoId = id;
+            const diaria = diarias.find(d => d.id === id);
+
+            document.getElementById('descricao').value = diaria.descricao;
+            document.getElementById('quantidade').value = diaria.quantidade;
+            document.getElementById('valorDiaria').value = diaria.valorDiaria;
+            document.getElementById('valorPago').value = diaria.valorPago;
+
+            calcularFormulario();
+
+            document.getElementById('formTitulo').textContent = '✏️ Editar Diária';
+            document.getElementById('btnSubmit').innerHTML = '<i class="fas fa-save"></i> Salvar Alterações';
+            document.getElementById('btnCancelar').style.display = 'block';
+
+            document.getElementById('formTitulo').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Cancelar edição
+        document.getElementById('btnCancelar').addEventListener('click', function() {
+            cancelarEdicao();
+        });
+
+        function cancelarEdicao() {
+            editandoId = null;
+            document.getElementById('diariaForm').reset();
+            document.getElementById('quantidade').value = '0';
+            document.getElementById('valorDiaria').value = '0';
+            document.getElementById('valorPago').value = '0';
+            calcularFormulario();
+            
+            document.getElementById('formTitulo').innerHTML = '<i class="fas fa-plus-circle"></i> Adicionar Diária';
+            document.getElementById('btnSubmit').innerHTML = '<i class="fas fa-plus-circle"></i> Adicionar Diária';
+            document.getElementById('btnCancelar').style.display = 'none';
+        }
+
+        // Submeter formulário
+        document.getElementById('diariaForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            if (!currentUser) {
+                alert('Você precisa estar logado!');
+                return;
+            }
+
+            const descricao = document.getElementById('descricao').value;
+            const quantidade = parseInt(document.getElementById('quantidade').value);
+            const valorDiaria = parseInt(document.getElementById('valorDiaria').value);
+            const valorPago = parseInt(document.getElementById('valorPago').value) || 0;
+
+            const total = quantidade * valorDiaria;
+            const faltaReceber = total - valorPago;
+
+            const diariaData = {
+                descricao,
+                quantidade,
+                valorDiaria,
+                total,
+                valorPago,
+                faltaReceber,
+                userId: currentUser.uid,
+                criadoEm: new Date().toISOString()
+            };
+
+            try {
+                if (editandoId !== null) {
+                    // Modo edição
+                    await updateDoc(doc(db, 'diarias', editandoId), diariaData);
+                    alert('✅ Diária atualizada com sucesso!');
+                    cancelarEdicao();
+                } else {
+                    // Modo adicionar
+                    await addDoc(collection(db, 'diarias'), diariaData);
+                    alert('✅ Diária adicionada com sucesso!');
+                    this.reset();
+                    document.getElementById('quantidade').value = '0';
+                    document.getElementById('valorDiaria').value = '0';
+                    document.getElementById('valorPago').value = '0';
+                    calcularFormulario();
+                }
+            } catch (error) {
+                alert('❌ Erro ao salvar: ' + error.message);
+            }
+        });
+
+        // Deletar diária
+        window.deletarDiaria = async function(id) {
+            if (confirm('Deseja realmente excluir este registro?')) {
+                try {
+                    await deleteDoc(doc(db, 'diarias', id));
+                    alert('✅ Diária excluída com sucesso!');
+                } catch (error) {
+                    alert('❌ Erro ao excluir: ' + error.message);
+                }
+            }
+        }
+
+        // Inicializar
+        calcularFormulario();
+
+        // ========================================
+        // PWA - SERVICE WORKER E INSTALAÇÃO
+        // ========================================
+
+        // Registrar Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker registrado com sucesso:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('❌ Falha ao registrar Service Worker:', error);
+                    });
+            });
+        }
+
+        // Prompt de Instalação do App
+        let deferredPrompt;
+        const installButton = document.createElement('button');
+        installButton.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            z-index: 1000;
+            display: none;
+            transition: all 0.3s;
+        `;
+        installButton.innerHTML = '<i class="fas fa-download"></i> Instalar App';
+        installButton.onmouseover = () => {
+            installButton.style.transform = 'translateY(-3px)';
+            installButton.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.5)';
+        };
+        installButton.onmouseout = () => {
+            installButton.style.transform = 'translateY(0)';
+            installButton.style.boxShadow = '0 5px 20px rgba(102, 126, 234, 0.4)';
+        };
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Previne o prompt automático
+            e.preventDefault();
+            // Guarda o evento para usar depois
+            deferredPrompt = e;
+            // Mostra botão de instalação
+            installButton.style.display = 'block';
+            document.body.appendChild(installButton);
+        });
+
+        installButton.addEventListener('click', async () => {
+            if (!deferredPrompt) {
+                return;
+            }
+            // Mostra o prompt de instalação
+            deferredPrompt.prompt();
+            // Aguarda a escolha do usuário
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`Escolha do usuário: ${outcome}`);
+            
+            if (outcome === 'accepted') {
+                console.log('✅ Usuário aceitou instalar o app');
+            } else {
+                console.log('❌ Usuário recusou instalar o app');
+            }
+            
+            // Limpa o prompt
+            deferredPrompt = null;
+            installButton.style.display = 'none';
+        });
+
+        // Detecta quando o app foi instalado
+        window.addEventListener('appinstalled', (evt) => {
+            console.log('✅ App instalado com sucesso!');
+            installButton.style.display = 'none';
+        });
+
+        // Verifica se já está rodando como PWA instalado
+        window.addEventListener('DOMContentLoaded', () => {
+            if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+                console.log('✅ App rodando como PWA instalado');
+                // Esconde o botão de instalação se já estiver instalado
+                installButton.style.display = 'none';
+            }
+        });
+        // Importe ou acesse o plugin (o Capacitor injeta automaticamente se configurado)
+const { StatusBar } = Capacitor.Plugins;
+
+const setStatusBarStyleLight = async () => {
+  try {
+    // Define que os ícones devem ser pretos (Style.Light)
+    // Se o seu fundo fosse escuro, você usaria Style.Dark para ícones brancos
+    await StatusBar.setStyle({ style: 'LIGHT' });
+    
+    // Opcional: define a cor de fundo da barra como branca
+    await StatusBar.setBackgroundColor({ color: '#FFFFFF' });
+  } catch (e) {
+    console.error("Erro ao configurar StatusBar", e);
+  }
+};
+
+// Chama a função assim que o app carregar
+window.addEventListener('DOMContentLoaded', () => {
+    setStatusBarStyleLight();
+});
+    </script>
+</body>
+</html>
